@@ -1,166 +1,89 @@
-# Cliente RAG
+# API de Preguntas y Respuestas RAG (FastAPI + Qdrant + OpenAI)
 
-Un proyecto de Retrieval-Augmented Generation (RAG) que utiliza Qdrant como base de datos vectorial y OpenAI para el procesamiento de lenguaje natural.
-
-## Estado del Proyecto
-
-🚀 **Proyecto en desarrollo activo**: Se está implementando un backend API robusto y escalable siguiendo las mejores prácticas de arquitectura de software.
-
-**Fase Actual**: [T1] Configuración Inicial del Proyecto y Entorno  
-**Subtarea Completada**: [S1.1] ✅ Inicializar repositorio y estructura de proyecto
-
-## Stack Tecnológico
-
-- **Lenguaje de Programación**: Python 3.8+
-- **Framework de API**: FastAPI
-- **Base de Datos Vectorial**: Qdrant
-- **Servicio LLM**: OpenAI
-- **Servidor ASGI**: Uvicorn
-- **Herramienta de Pruebas**: Pytest con TestClient de FastAPI
-- **Gestión de Dependencias**: pip/poetry
-
-## Arquitectura del Sistema
-
-### Diseño API-First
-La API está diseñada para ser completamente agnóstica a la interfaz de usuario, permitiendo:
-- Integración con múltiples tipos de clientes (web, móvil, CLI)
-- Escalabilidad independiente del frontend
-- Facilidad para testing automatizado
-- Documentación automática con OpenAPI/Swagger
-
-### Componentes Principales
-1. **API Gateway**: FastAPI con endpoints RESTful
-2. **Motor RAG**: Lógica de procesamiento y recuperación
-3. **Vector Store**: Qdrant para embeddings y búsqueda semántica
-4. **LLM Integration**: OpenAI para generación y embeddings
-5. **Testing Suite**: Pruebas automatizadas completas
-
-## Configuración
-
-### Variables de Entorno
-
-Copia el archivo `.env.example` a `.env` y configura las siguientes variables:
-
-```bash
-# Configuración de Qdrant
-QDRANT_API_KEY=tu_qdrant_api_key_aqui
-QDRANT_URL=https://tu-instancia.qdrant.io
-
-# Configuración de OpenAI
-OPENAI_API_KEY=sk-proj-tu_openai_api_key_aqui
-```
-
-### Requisitos
-
-- Python 3.8+
-- Acceso a Qdrant (local o cloud)
-- API Key de OpenAI
-- Entorno virtual Python (ya configurado en `venv/`)
+## Descripción
+Esta API permite realizar preguntas fácticas y obtener respuestas detalladas y explicativas, integrando recuperación aumentada por generación (RAG) con Qdrant y OpenAI. El flujo es robusto, escalable y apto para alta demanda.
 
 ## Estructura del Proyecto
+- `main.py`: Entrypoint FastAPI, define endpoints `/health` y `/ask`.
+- `models.py`: Modelos Pydantic para la entrada (`QuestionRequest`) y salida (`AnswerResponse`).
+- `services.py`: Funciones asíncronas para embeddings, búsqueda en Qdrant y generación de respuestas con OpenAI.
+- `app_tkinter.py`: Interfaz gráfica de escritorio para pruebas manuales.
+- `.env`: Variables de entorno sensibles (no subir a control de versiones).
+- `requirements.txt`: Dependencias del proyecto.
 
+## Instalación y Configuración
+1. **Clona el repositorio y entra al directorio:**
+   ```bash
+   git clone <repo_url>
+   cd cliente_rag
+   ```
+2. **Crea y activa un entorno virtual:**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
+3. **Instala las dependencias:**
+   ```bash
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
+4. **Configura las variables de entorno en `.env`:**
+   ```env
+   QDRANT_API_KEY=...
+   QDRANT_URL=...
+   OPENAI_API_KEY=...
+   QDRANT_COLLECTION=mi_coleccion
+   EMBEDDING_MODEL=text-embedding-3-small
+   ```
+
+## Ejecución
+### API FastAPI
+```bash
+uvicorn main:app --reload --port 8000
 ```
-cliente_rag/
-├── .env.example              # Plantilla de variables de entorno
-├── .gitignore               # Archivos ignorados por Git
-├── .vscode/
-│   └── tasks.json           # Tareas de VS Code
-├── venv/                    # Entorno virtual Python (existente)
-├── README.md                # Documentación principal
-├── DEVELOPMENT_PLAN.md      # Plan de desarrollo detallado
-└── backend/                 # ✅ Backend FastAPI
-    ├── app/                 # ✅ Aplicación principal
-    │   ├── __init__.py      # ✅ Módulo principal
-    │   ├── main.py          # (Próximo) Entry point FastAPI
-    │   ├── config/          # ✅ Configuración
-    │   ├── api/             # ✅ Endpoints API
-    │   │   └── v1/          # ✅ API versión 1
-    │   │       └── endpoints/ # ✅ Endpoints específicos
-    │   ├── core/            # ✅ Lógica central RAG
-    │   ├── models/          # ✅ Modelos Pydantic
-    │   └── utils/           # ✅ Utilidades
-    ├── tests/               # ✅ Suite de testing
-    │   ├── unit/            # ✅ Tests unitarios
-    │   ├── integration/     # ✅ Tests de integración
-    │   └── e2e/             # ✅ Tests end-to-end
-    ├── scripts/             # ✅ Scripts de utilidad
-    └── docs/                # ✅ Documentación técnica
-        ├── api/             # ✅ Docs de API
-        └── development/     # ✅ Guías de desarrollo
+- Documentación interactiva: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+
+### Interfaz Tkinter
+```bash
+python app_tkinter.py
 ```
 
-## Tareas Disponibles
+## Endpoints
+### `/health` (GET)
+- Verifica el estado de la API.
+- Respuesta: `{ "status": "ok" }`
 
-### VS Code Tasks
+### `/ask` (POST)
+- Recibe: `{ "question": "<pregunta>" }`
+- Devuelve: `{ "answer": "<respuesta detallada>", "sources": [<opcional>] }`
+- Orquesta:
+  1. Obtiene embedding de la pregunta vía OpenAI.
+  2. Recupera contexto relevante desde Qdrant (`text_content`).
+  3. Construye un prompt contextualizado y consulta OpenAI para generar la respuesta.
 
-- **Iniciar Backend RAG**: Ejecuta el script `./backend/start.sh`
-  ```bash
-  # Para ejecutar manualmente:
-  cd backend && ./start.sh
+## Ejemplo de Uso
+```bash
+curl -X POST "http://127.0.0.1:8000/ask" -H "Content-Type: application/json" -d '{"question": "¿Cuál es la capital de Francia?"}'
+```
+
+## Notas Técnicas
+- El campo de contexto usado es `text_content` (igual que en la app Tkinter).
+- El prompt enviado a OpenAI sigue el formato:
   ```
+  Contexto relevante:
+  <contexto recuperado>
+  ---
+  <más contexto>
 
-### Scripts de Desarrollo (En desarrollo)
+  Pregunta: <pregunta>
+  Respuesta (por favor, responde de forma detallada y extensa usando solo el contexto proporcionado):
+  ```
+- El sistema es asíncrono y preparado para alta demanda.
+- Las credenciales y endpoints se cargan desde `.env`.
 
-```bash
-# Setup inicial del proyecto
-./backend/scripts/setup.sh
+## Seguridad
+- **Nunca subas el archivo `.env` a un repositorio público.**
+- Las claves API son sensibles y deben manejarse con cuidado.
 
-# Ejecutar tests
-./backend/scripts/test.sh
-
-# Iniciar servidor de desarrollo
-./backend/scripts/start.sh
-```
-
-## Desarrollo
-
-### Próximos Pasos
-
-El desarrollo seguirá un plan estructurado en fases para garantizar calidad y escalabilidad:
-
-> **Ver**: [DEVELOPMENT_PLAN.md](./DEVELOPMENT_PLAN.md) para el plan completo de desarrollo con cronograma y especificaciones técnicas detalladas.
-
-### Resumen de Fases
-
-1. **✅ Fase 1**: Configuración de Proyecto y Estructura Base (En progreso)
-2. **Fase 2**: Implementación del Core API
-3. **Fase 3**: Integración con Qdrant y OpenAI
-4. **Fase 4**: Testing y Validación
-5. **Fase 5**: Optimización y Documentación
-6. **Fase 6**: Preparación para Despliegue
-
-### Configuración del Entorno (Usando venv existente)
-
-```bash
-# Activar entorno virtual existente
-source venv/bin/activate
-
-# Instalar dependencias (cuando estén disponibles)
-pip install -r backend/requirements.txt
-
-# Configurar variables de entorno
-cp .env.example .env
-# Editar .env con tus credenciales
-```
-
-## Contribución
-
-Este proyecto está en desarrollo activo. Para contribuir:
-
-1. Clona el repositorio
-2. Activa el entorno virtual: `source venv/bin/activate`
-3. Configura las variables de entorno
-4. Sigue el plan de desarrollo establecido
-
-## Repositorio Git
-
-✅ **Repositorio inicializado**: El proyecto ahora tiene control de versiones Git configurado.
-
-## Licencia
-
-[Especificar licencia]
-
----
-
-*Documentación actualizada el 15 de julio de 2025*  
-*Última actualización de estructura: Subtarea S1.1 completada*
+## Créditos
+Desarrollado por crrb y GitHub Copilot.
