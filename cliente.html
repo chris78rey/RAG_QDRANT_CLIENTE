@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente RAG Qdrant + OpenAI</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: #f7f7fa;
+            color: #222;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+            padding: 32px 24px 24px 24px;
+        }
+        h1 {
+            text-align: center;
+            color: #4a90e2;
+            margin-bottom: 24px;
+        }
+        label {
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: block;
+        }
+        textarea {
+            width: 100%;
+            min-height: 60px;
+            font-size: 1rem;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            margin-bottom: 16px;
+            resize: vertical;
+        }
+        button {
+            background: #4a90e2;
+            color: #fff;
+            font-weight: 700;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:disabled {
+            background: #b0c4de;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background: #357ab8;
+        }
+        .respuesta {
+            background: #f1f8ff;
+            border-left: 4px solid #4a90e2;
+            padding: 16px;
+            border-radius: 6px;
+            margin-top: 24px;
+            min-height: 60px;
+            white-space: pre-line;
+        }
+        .footer {
+            text-align: center;
+            color: #888;
+            font-size: 0.9em;
+            margin-top: 32px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cliente RAG Qdrant + OpenAI</h1>
+        <form id="formPregunta">
+            <label for="pregunta">Pregunta:</label>
+            <textarea id="pregunta" required placeholder="Escribe tu pregunta aquí..."></textarea>
+            <button type="submit" id="btnEnviar">Preguntar</button>
+        </form>
+        <div class="respuesta" id="respuesta"></div>
+    </div>
+    <div class="footer">Desarrollado por crrb &middot; UI/UX amigable y accesible</div>
+    <script>
+        const form = document.getElementById('formPregunta');
+        const preguntaInput = document.getElementById('pregunta');
+        const respuestaDiv = document.getElementById('respuesta');
+        const btnEnviar = document.getElementById('btnEnviar');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pregunta = preguntaInput.value.trim();
+            if (!pregunta) return;
+            respuestaDiv.textContent = 'Consultando...';
+            btnEnviar.disabled = true;
+            try {
+                const resp = await fetch('/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: pregunta })
+                });
+                if (!resp.ok) throw new Error('Error en la API');
+                const data = await resp.json();
+                respuestaDiv.textContent = data.answer || 'Sin respuesta.';
+            } catch (err) {
+                respuestaDiv.textContent = 'Error: ' + err.message;
+            } finally {
+                btnEnviar.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

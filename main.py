@@ -1,5 +1,7 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from models import QuestionRequest, AnswerResponse
 from services import search_qdrant, generate_answer_with_openai
 import os
@@ -13,9 +15,22 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="API de Alta Demanda", version="1.0.0")
 
-@app.get("/")
-def read_root():
-    return {"message": "API inicial lista"}
+# Habilitar CORS para permitir peticiones desde cualquier origen (ajusta origins en producción)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Servir archivos estáticos (HTML)
+app.mount("/static", StaticFiles(directory="."), name="static")
+
+@app.get("/", response_class=HTMLResponse)
+def serve_html():
+    with open("cliente.html", encoding="utf-8") as f:
+        return f.read()
 
 @app.get("/health", response_class=JSONResponse, tags=["Health"])
 def health_check():
